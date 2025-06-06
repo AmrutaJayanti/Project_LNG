@@ -1,5 +1,4 @@
 import {
-  Badge,
   Box,
   Button,
   Drawer,
@@ -29,7 +28,6 @@ import axios from 'axios';
 import type { AxiosRequestConfig } from 'axios';
 import ChatLoading from '../components/chat/chat-loading';
 import UserList from '../components/chat/user-list';
-import { getSender } from '../config/chat-logic';
 import { IoGameControllerOutline } from 'react-icons/io5';
 import '../styles/sliderDrawer.css';
 import { IoChatbubbleOutline } from "react-icons/io5";
@@ -44,8 +42,6 @@ const SlideDrawer: React.FC = () => {
     setSelectedChat,
     chats,
     setChats,
-    notification,
-    setNotification,
   } = ChatState();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [search, setSearch] = useState<string>('');

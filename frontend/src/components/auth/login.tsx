@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   FormControl, FormLabel, 
-  Input, InputGroup, InputRightElement,
+  Input, InputGroup,
   Button, VStack, useToast 
 } from '@chakra-ui/react';
 import axios from 'axios';
@@ -13,7 +13,6 @@ const Login: React.FC = () => {
   const toast = useToast();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [show, setShow] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
 
@@ -80,7 +79,7 @@ const Login: React.FC = () => {
         <InputGroup>
           <Input
             value={password}
-            type={show ? 'text' : 'password'}
+            type='password'
             placeholder="Enter Password"
             onChange={(e) => setPassword(e.target.value)}
             _placeholder={{ color: '#07111e' }}
