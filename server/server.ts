@@ -244,6 +244,7 @@ io.on('connection', (socket) => {
 
 		if (!current_room.user1.userId || !current_room.user2.userId) {
 			io.in(payload.roomId).emit<TicTacSockets>('userLeave', {});
+			return;
 		}
 
 		if (current_room?.user1.userId === payload.userId) {
