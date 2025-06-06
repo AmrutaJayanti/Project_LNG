@@ -110,39 +110,7 @@ io.on('connection', (socket) => {
 	// socket Off
 	socket.off('setup', (userData: UserProps) => {
 		socket.leave(userData._id);
-	});
-
-	// userJoined (Canvas)
-	socket.on<SocketNames>('userJoined', (data: RoomTypes) => {
-		const { name, userId, roomId, host, presenter } = data;
-		roomIdGlobal = roomId;
-		socket.join(roomId);
-
-		const users = addUser({
-			name,
-			userId,
-			roomId,
-			host,
-			presenter,
-			socketId: socket.id,
-		});
-
-		// User Is Joined
-		socket.emit<SocketEmitNames>('userIsJoined', { success: true, users });
-
-		// user Joined message
-		socket.broadcast
-			.to(roomId)
-			.emit<SocketEmitNames>('userJoinedMessageBoradcasted', name);
-
-		// all joiners
-		socket.broadcast.to(roomId).emit<SocketEmitNames>('allUsers', users);
-	});
-
-	// Draw (Canvas)
-	socket.on<SocketNames>('draw', (data: any) => {
-		socket.broadcast.emit<SocketEmitNames>('isDraw', data);
-	});
+	})
 
 	// Join Room (TicTacToe)
 	socket.on<TicTacSockets>('joinRoom', (payload: JoinRoomPayload) => {
