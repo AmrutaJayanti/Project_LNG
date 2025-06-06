@@ -21,7 +21,7 @@ const MyChats: FC<MyChatsProps> = ({ fetchAgain }) => {
   const fetchChats = async () => {
     try {
       const config: AxiosRequestConfig = {
-        baseURL: 'https://project-lng-1.onrender.com',
+        baseURL: 'https://project-lng-2.onrender.com',
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
