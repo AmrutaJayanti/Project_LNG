@@ -183,16 +183,13 @@ const SingleChat: React.FC<ChatBoxProps> = ({ fetchAgain, setFetchAgain }) => {
             }}
             alignItems="center"
           >
-            <IconButton
-              display={{
-                base: 'flex',
-                md: 'none',
-              }}
-              width:'50%'
-              icon={<ArrowBackIcon />}
-              onClick={() => setSelectedChat('')}
-              aria-label="back button"
-            />
+           <IconButton
+  display={{ base: 'flex', md: 'none' }}
+  width="50%"
+  icon={<ArrowBackIcon />}
+  onClick={() => setSelectedChat('')}
+  aria-label="back button"
+/>
             {!selectedChat.isGroupChat ? (
               <>
                 <Text className="chat-header-text">{getSender(user, selectedChat.users)}</Text>
