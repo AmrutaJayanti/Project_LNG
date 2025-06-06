@@ -180,55 +180,70 @@ io.on('connection', (socket) => {
   });
 
   // Move (TicTacToe)
-  socket.on<TicTacSockets>('move', async (payload: JoinRoomPayload) => {
-    const current_room = GetGameDetail(payload.roomId)!;
-    let current_username;
-    let moveCount;
+ socket.on<TicTacSockets>('move', async (payload: JoinRoomPayload) => {
+  const current_room = GetGameDetail(payload.roomId)!;
+  
+  // Enforce turn order: reject if it's not the player's turn
+  if (current_room.currentTurn !== payload.userId) {
+    socket.emit<TicTacSockets>('message', { error: "It's not your turn" });
+    return;
+  }
 
-    if (!current_room.user1.userId || !current_room.user2.userId) {
-      io.in(payload.roomId).emit<TicTacSockets>('userLeave', {});
-    }
+  if (!current_room.user1.userId || !current_room.user2.userId) {
+    io.in(payload.roomId).emit<TicTacSockets>('userLeave', {});
+    return;
+  }
 
-    if (current_room?.user1.userId === payload.userId) {
-      current_room.user1.moves.push(payload.move);
-      moveCount = current_room.user1.moves.length;
-      current_username = current_room.user1.username;
-    } else {
-      current_room?.user2.moves.push(payload.move);
-      moveCount = current_room?.user2.moves.length;
-      current_username = current_room?.user2.username;
-    }
+  let current_username;
+  let moveCount;
 
-    io.in(payload.roomId).emit<TicTacSockets>('move', {
-      move: payload.move,
-      userId: payload.userId,
-    });
+  if (current_room.user1.userId === payload.userId) {
+    current_room.user1.moves.push(payload.move);
+    moveCount = current_room.user1.moves.length;
+    current_username = current_room.user1.username;
+  } else {
+    current_room.user2.moves.push(payload.move);
+    moveCount = current_room.user2.moves.length;
+    current_username = current_room.user2.username;
+  }
 
-    if (moveCount >= 3) {
-      const { isWin, winCount, pattern } = CheckWin(
-        payload.roomId,
-        payload.userId,
-      );
+  // Switch turn to other player
+  current_room.currentTurn =
+    current_room.currentTurn === current_room.user1.userId
+      ? current_room.user2.userId
+      : current_room.user1.userId;
 
-      if (isWin) {
-        io.in(payload.roomId).emit<TicTacSockets>('win', {
-          userId: payload.userId,
-          username: current_username,
-          pattern,
-        });
-        return;
-      }
-
-      if (
-        current_room?.user1.moves.length + current_room.user2.moves.length >= 9
-      ) {
-        io.in(payload.roomId).emit<TicTacSockets>('draw', {
-          roomId: payload.roomId,
-        });
-        return;
-      }
-    }
+  io.in(payload.roomId).emit<TicTacSockets>('move', {
+    move: payload.move,
+    userId: payload.userId,
   });
+
+  if (moveCount >= 3) {
+    const { isWin, winCount, pattern } = CheckWin(
+      payload.roomId,
+      payload.userId,
+    );
+
+    if (isWin) {
+      io.in(payload.roomId).emit<TicTacSockets>('win', {
+        userId: payload.userId,
+        username: current_username,
+        pattern,
+      });
+      return;
+    }
+
+    if (
+      current_room.user1.moves.length + current_room.user2.moves.length >= 9
+    ) {
+      io.in(payload.roomId).emit<TicTacSockets>('draw', {
+        roomId: payload.roomId,
+      });
+      return;
+    }
+  }
+});
+
 
   // Rematch (TicTacToe)
   socket.on<TicTacSockets>('reMatch', (payload: JoinRoomPayload) => {
