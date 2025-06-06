@@ -1,0 +1,89 @@
+/* Overlay Blur and Background */
+.chakra-modal__overlay {
+  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Modal Content Styling */
+.chakra-modal__content {
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Modal Header */
+.chakra-modal__header {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Modal Close Button */
+.chakra-modal__close-btn {
+  color: #4b5563;
+  font-size: 1.2rem;
+  top: 1rem;
+  right: 1rem;
+}
+
+/* Modal Body */
+.chakra-modal__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+/* User Profile Image */
+.profile-modal-image {
+  width: 150px;
+  height: 150px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 3px solid #cbd5e0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Email Text */
+.profile-modal-text {
+  font-size: 1rem;
+  color: #374151;
+}
+
+/* Modal Footer */
+.chakra-modal__footer {
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+/* Close Button */
+.chakra-button {
+  background-color: #1e293b;
+  color: white;
+  font-weight: bold;
+  border-radius: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  transition: background-color 0.3s ease;
+}
+
+.chakra-button:hover {
+  background-color: #0f172a;
+}
+
+/* Optional: Icon Button for opening modal */
+.profile-modal-icon-button {
+  background-color: transparent;
+  color: #1e293b;
+  font-size: 1.25rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.profile-modal-icon-button:hover {
+  background-color: #e2e8f0;
+}

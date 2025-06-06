@@ -1,0 +1,99 @@
+.join-modal {
+	z-index: 50;
+	position: relative;
+}
+
+.join-modal-backdrop {
+	position: fixed;
+	inset: 0;
+	backdrop-filter: blur(4px);
+	background-color: rgba(0, 0, 0, 0.3);
+}
+
+.join-modal-container {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	overflow-y: auto;
+}
+
+.join-modal-panel {
+	width: 100%;
+	max-width: 24rem;
+	padding: 1.5rem;
+	background-color: #f9fafb;
+	border: 1px solid #e5e7eb;
+	border-radius: 1rem;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease-in-out;
+}
+
+.join-modal-title {
+	text-align: center;
+	font-size: 1.3rem;
+	font-weight: 700;
+	color: #374151;
+}
+
+.join-modal-content {
+	margin-top: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+
+.join-form-control {
+	display: flex;
+	align-items: center;
+	width: auto;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.join-input {
+	width: 100%;
+	padding: 0.5rem 0.75rem;
+	background-color: white; /* Explicit background */
+	border: 1px solid #a0aec0; /* Add visible border */
+	color: #1a202c; /* Dark readable text */
+	border-radius: 0.375rem;
+	font-size: 1rem;
+	outline: none;
+}
+
+.join-input:focus {
+	border-color: #319795;
+	box-shadow: 0 0 0 1px #319795;
+}
+
+
+.join-button {
+	background-color: #319795;
+	color: rgb(17, 2, 2);
+	border-radius: 0 0.375rem 0.375rem 0;
+	cursor: pointer;
+}
+
+.join-button[disabled] {
+	background-color: #a0aec0;
+	cursor: not-allowed;
+}
+
+.join-play-button {
+	width: 100%;
+	margin-top: 1rem;
+	padding: 0.75rem 1.25rem;
+	background-color: #1e293b;
+	color: white;
+	font-weight: bold;
+	border-radius: 0.5rem;
+	transition: background-color 0.3s ease;
+}
+
+.join-play-button:hover {
+	background-color: #0f172a;
+}
