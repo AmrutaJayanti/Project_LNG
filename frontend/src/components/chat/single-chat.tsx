@@ -188,6 +188,7 @@ const SingleChat: React.FC<ChatBoxProps> = ({ fetchAgain, setFetchAgain }) => {
                 base: 'flex',
                 md: 'none',
               }}
+              width:'50%'
               icon={<ArrowBackIcon />}
               onClick={() => setSelectedChat('')}
               aria-label="back button"
