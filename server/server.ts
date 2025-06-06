@@ -18,15 +18,6 @@ import {
 	TimerPayloadProps,
 	UserProps,
 } from './types';
-import {
-	PlayerProps,
-	RoomTypes,
-	TypeRaceInputProps,
-	TypeRaceJoinRoomPayloadProps,
-	TypeRaceSockets,
-	VideoCallUser,
-	VideoSockets,
-} from './types/canvas';
 import { addUser } from './utils/user';
 import {
 	AddUser,
@@ -36,9 +27,7 @@ import {
 	RemoveRoom,
 	UserLeft,
 } from './utils/tictactoe';
-import { TypeRaceGame } from './models/type-race-game/player-model';
-import { getQuoteData } from './utils/quotable-api';
-import { calculateTime, calculateWPM } from './utils/game-clock';
+
 
 dotenv.config();
 connectDB();
@@ -48,8 +37,6 @@ app.use(express.json());
 app.use(
 	cors({
 		origin: [
-			'http://localhost:5173',
-			'https://livenetworkgames.netlify.app',
 			'https://livenetworkgames.netlify.app/'
 		],
 	}),
@@ -73,9 +60,7 @@ const io: Server = new Server(server, {
 	pingTimeout: 60000,
 	cors: {
 		origin: [
-			'http://localhost:5173',
-			'https://livenetworkgames.netlify.app',
-			'https://livenetworkgames.netlify.app/'
+			'https://livenetworkgames.netlify.app/',
 		],
 	},
 });
@@ -244,7 +229,6 @@ io.on('connection', (socket) => {
 
 		if (!current_room.user1.userId || !current_room.user2.userId) {
 			io.in(payload.roomId).emit<TicTacSockets>('userLeave', {});
-			return;
 		}
 
 		if (current_room?.user1.userId === payload.userId) {
@@ -306,202 +290,8 @@ io.on('connection', (socket) => {
 		RemoveRoom(payload.roomId);
 	});
 
-	// Create Game (Type Race)
-	socket.on<TypeRaceSockets>('create-game', async (nickName: string) => {
-		try {
-			const quotableData = await getQuoteData();
-			let game = new TypeRaceGame();
-			game.words = quotableData;
-			let player: PlayerProps = {
-				socketId: socket.id,
-				isPartyLeader: true,
-				nickName,
-			};
-			game.players.push(player);
-			game = await game.save();
-
-			const gameID = game._id.toString();
-			socket.join(gameID);
-			io.to(gameID).emit<TypeRaceSockets>('update-game', game);
-		} catch (error) {
-			console.log('Create Game Error => ', error);
+		console.log('Create Game Error => ', error);
 		}
 	});
 
-	// Join Game (Type Race)
-	socket.on<TypeRaceSockets>(
-		'join-game',
-		async ({ gameId: _id, nickName }: TypeRaceJoinRoomPayloadProps) => {
-			try {
-				let game = await TypeRaceGame.findById(_id);
-				if (game?.isOpen) {
-					const gameId = game._id.toString();
-					socket.join(gameId);
-					let player: PlayerProps = {
-						socketId: socket.id,
-						nickName,
-					};
-					game.players.push(player);
-					game = await game.save();
-					io.to(gameId).emit<TypeRaceSockets>('update-game', game);
-				}
-			} catch (error) {
-				console.log(error);
-			}
-		},
-	);
-
-	// Timer (Type Race)
-	socket.on<TypeRaceSockets>(
-		'timer',
-		async ({ playerId, gameId }: TimerPayloadProps) => {
-			let countDown: number = 5;
-			let game = await TypeRaceGame.findById(gameId);
-			let player = game?.players.id(playerId);
-
-			if (player === undefined) {
-				io.to(gameId).emit<TypeRaceSockets>('timer', {
-					countDown: 0,
-					msg: 'There is no Player, TryAgain',
-				});
-				io.to(gameId).emit<TypeRaceSockets>('update-game', game);
-			}
-
-			if (player?.isPartyLeader) {
-				let timerId = setInterval(async () => {
-					if (countDown >= 0) {
-						io.to(gameId).emit<TypeRaceSockets>('timer', {
-							countDown,
-							msg: 'Starting Game in...',
-						});
-						io.to(gameId).emit<TypeRaceSockets>('update-game', game);
-						countDown--;
-					} else {
-						if (game) {
-							game.isOpen = false;
-							game = await game.save();
-							io.to(gameId).emit<TypeRaceSockets>('update-game', game);
-							startGameClock(gameId);
-							clearInterval(timerId);
-						}
-					}
-				}, 1000);
-			}
-		},
-	);
-
-	// UserInput (Type Race)
-	socket.on<TypeRaceSockets>(
-		'user-input',
-		async ({ input, gameId }: TypeRaceInputProps) => {
-			console.log('input', input);
-			try {
-				let game = await TypeRaceGame.findById(gameId);
-				if (!game?.isOpen && !game?.isOver) {
-					let player = game?.players.find(
-						(player: PlayerProps) => player.socketId === socket.id,
-					);
-					let word = game?.words[player.currentWordIndex];
-					console.log('word', word);
-					if (word === input) {
-						player.currentWordIndex++;
-						console.log('player.currentWordIndex', player.currentWordIndex);
-						if (player.currentWordIndex !== game?.words.length) {
-							if (game) {
-								game = await game?.save();
-								io.to(gameId).emit<TypeRaceSockets>('update-game', game);
-							}
-						} else {
-							if (game) {
-								let endTime = new Date().getTime();
-								let { startTime } = game;
-								player.WPM = calculateWPM(endTime, startTime, player);
-								game = await game?.save();
-								socket.emit<TypeRaceSockets>('done');
-								io.to(gameId).emit<TypeRaceSockets>('update-game', game);
-							}
-						}
-					}
-				}
-			} catch (error) {
-				console.error(error);
-			}
-		},
-	);
-
-	// Me (Video Call)
-	socket.emit<VideoSockets>('me', socket.id);
-
-	// Call User (Video call)
-	socket.on<VideoSockets>('callUser', (data: VideoCallUser) => {
-		io.to(data.userToCall).emit<VideoSockets>('callUser', {
-			signal: data.signalData,
-			from: data.from,
-			name: data.name,
-		});
-	});
-
-	// Answer Call (Video Call)
-	socket.on<VideoSockets>('answerCall', (data: VideoCallUser) => {
-		io.to(data.to).emit<VideoSockets>('callAccepted', data.signal);
-	});
-
-	// Disconnect
-	socket.on<TicTacSockets>('disconnect', () => {
-		const roomId = UserLeft(socket.id)!;
-		io.in(roomId).emit<TicTacSockets>('userLeave', { roomId });
-
-		socket.broadcast.emit<VideoSockets>('callEnded');
-	});
-});
-
-/**
- * Start Game Clock Util
- * @param {string} gameId
- */
-async function startGameClock(gameId: string) {
-	let game = await TypeRaceGame.findById(gameId);
-	if (game) {
-		game.startTime = new Date().getTime();
-		game = await game.save();
-		let time: number = 120;
-
-		let timerID = setInterval(
-			(function getIntervalFunc() {
-				if (time >= 0) {
-					const formatTime = calculateTime(time);
-					io.to(gameId).emit<TypeRaceSockets>('timer', {
-						countDown: formatTime,
-						msg: 'Time Remaining',
-					});
-					time--;
-				} else {
-					(async () => {
-						let endTime = new Date().getTime();
-						let game = await TypeRaceGame.findById(gameId);
-
-						if (game) {
-							let { startTime } = game;
-							game.isOver = true;
-							game.players.forEach((player: PlayerProps, index: number) => {
-								if (player.WPM === -1 && game) {
-									game.players[index].WPM = calculateWPM(
-										endTime,
-										startTime,
-										player,
-									);
-								}
-							});
-							game = await game.save();
-							io.to(gameId).emit<TypeRaceSockets>('update-game', game);
-							// @ts-ignore
-							clearInterval(timerID);
-						}
-					})();
-				}
-				return getIntervalFunc;
-			})(),
-			1000,
-		);
-	}
 }
