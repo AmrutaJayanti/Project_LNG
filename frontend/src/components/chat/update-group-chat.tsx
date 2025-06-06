@@ -51,7 +51,7 @@ const UpdateGroupChat: React.FC<ChatBoxProps> = ({
     try {
       setRenameLoading(true);
       const config: AxiosRequestConfig = {
-        baseURL: 'http://localhost:5000',
+        baseURL: 'https://project-lng-1.onrender.com',
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
@@ -90,7 +90,7 @@ const UpdateGroupChat: React.FC<ChatBoxProps> = ({
     try {
       setLoading(true);
       const config: AxiosRequestConfig = {
-        baseURL: 'http://localhost:5000',
+        baseURL: 'https://project-lng-1.onrender.com',
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
@@ -125,7 +125,7 @@ const UpdateGroupChat: React.FC<ChatBoxProps> = ({
     try {
       setLoading(true);
       const config: AxiosRequestConfig = {
-        baseURL: 'http://localhost:5000',
+        baseURL: 'https://project-lng-1.onrender.com',
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
@@ -159,7 +159,7 @@ const UpdateGroupChat: React.FC<ChatBoxProps> = ({
     try {
       setLoading(true);
       const config: AxiosRequestConfig = {
-        baseURL: 'http://localhost:5000',
+        baseURL: 'https://project-lng-1.onrender.com',
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
