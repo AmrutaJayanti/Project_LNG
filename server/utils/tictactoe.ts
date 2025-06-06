@@ -9,10 +9,10 @@ const gameDetails: TicGameDetails[] = [];
  * @param roomId
  */
 export function AddUser(socketId: string, roomId: string) {
-	users.push({
-		socketId,
-		roomId,
-	});
+  users.push({
+    socketId,
+    roomId,
+  });
 }
 
 /**
@@ -21,7 +21,7 @@ export function AddUser(socketId: string, roomId: string) {
  * @returns
  */
 export function GetCurrentUser(id: string) {
-	return users.find((user) => user.id === id);
+  return users.find((user) => user.socketId === id);
 }
 
 /**
@@ -30,10 +30,10 @@ export function GetCurrentUser(id: string) {
  * @returns
  */
 export function UserLeave(id: string) {
-	const index = users.findIndex((user) => user.id === id);
-	if (index !== -1) {
-		return users.splice(index, 1)[0];
-	}
+  const index = users.findIndex((user) => user.socketId === id);
+  if (index !== -1) {
+    return users.splice(index, 1)[0];
+  }
 }
 
 /**
@@ -44,37 +44,39 @@ export function UserLeave(id: string) {
  * @returns
  */
 export function NewGame(room: any, userId: any, username: any) {
-	let isRoomExist = gameDetails.find((item) => item.room === room);
-	console.log('isRoomExist', isRoomExist);
-	if (!isRoomExist) {
-		let newGameDetail: TicGameDetails;
-		newGameDetail = {
-			room,
-			user1: {
-				userId,
-				username,
-				moves: [],
-				winCount: 0,
-				inGame: false,
-			},
-			user2: {
-				userId: 0,
-				username: 0,
-				moves: [],
-				winCount: 0,
-				inGame: false,
-			},
-		};
-		gameDetails.push(newGameDetail);
-	} else {
-		if (isRoomExist.user2.userId === 0 && isRoomExist.user1.userId != userId) {
-			isRoomExist.user2.userId = userId;
-			isRoomExist.user2.username = username;
-		} else {
-			return false;
-		}
-	}
-	return true;
+  let isRoomExist = gameDetails.find((item) => item.room === room);
+  if (!isRoomExist) {
+    let newGameDetail: TicGameDetails = {
+      room,
+      currentTurn: userId, // Set first player's turn at start
+      user1: {
+        userId,
+        username,
+        moves: [],
+        winCount: 0,
+        inGame: false,
+      },
+      user2: {
+        userId: 0,
+        username: '',
+        moves: [],
+        winCount: 0,
+        inGame: false,
+      },
+    };
+    gameDetails.push(newGameDetail);
+  } else {
+    if (
+      isRoomExist.user2.userId === 0 &&
+      isRoomExist.user1.userId !== userId
+    ) {
+      isRoomExist.user2.userId = userId;
+      isRoomExist.user2.username = username;
+    } else {
+      return false; // Room is full or user already joined
+    }
+  }
+  return true;
 }
 
 /**
@@ -83,21 +85,21 @@ export function NewGame(room: any, userId: any, username: any) {
  * @returns
  */
 export function GetGameDetail(room: any) {
-	return gameDetails.find((item) => item.room === room);
+  return gameDetails.find((item) => item.room === room);
 }
 
 /**
  * WinPatterns
  */
 export const WinPatterns: any[] = [
-	[1, 2, 3],
-	[4, 5, 6],
-	[7, 8, 9],
-	[1, 4, 7],
-	[2, 5, 8],
-	[3, 6, 9],
-	[1, 5, 9],
-	[3, 5, 7],
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9],
+  [1, 4, 7],
+  [2, 5, 8],
+  [3, 6, 9],
+  [1, 5, 9],
+  [3, 5, 7],
 ];
 
 /**
@@ -107,48 +109,49 @@ export const WinPatterns: any[] = [
  * @returns
  */
 export function CheckWin(room: any, userId: any) {
-	let gameDetail = GetGameDetail(room)!;
-	let user;
-	let curr_user_moves: any;
-	let winCount;
+  let gameDetail = GetGameDetail(room)!;
+  let user;
+  let curr_user_moves: any;
+  let winCount;
 
-	if (gameDetail.user1.userId == userId) {
-		user = 1;
-		curr_user_moves = gameDetail.user1.moves;
-	} else {
-		user = 2;
-		curr_user_moves = gameDetail.user2.moves;
-	}
+  if (gameDetail.user1.userId == userId) {
+    user = 1;
+    curr_user_moves = gameDetail.user1.moves;
+  } else {
+    user = 2;
+    curr_user_moves = gameDetail.user2.moves;
+  }
 
-	let pattern: any;
-	let isWin;
+  let pattern: any;
+  let isWin = false;
 
-	for (let i = 0; i < WinPatterns.length; i++) {
-		let win_pattern = WinPatterns[i];
-		isWin = true;
-		for (let j = 0; j < win_pattern.length; j++) {
-			if (!curr_user_moves.includes(win_pattern[j])) {
-				isWin = false;
-			}
-		}
-		if (isWin) {
-			pattern = i;
-			if (user === 1) {
-				gameDetail.user1.winCount = gameDetail.user1.winCount + 1;
-				winCount = gameDetail.user1.winCount;
-			} else {
-				gameDetail.user2.winCount = gameDetail.user2.winCount + 1;
-				winCount = gameDetail.user1.winCount;
-			}
-			break;
-		}
-	}
+  for (let i = 0; i < WinPatterns.length; i++) {
+    let win_pattern = WinPatterns[i];
+    isWin = true;
+    for (let j = 0; j < win_pattern.length; j++) {
+      if (!curr_user_moves.includes(win_pattern[j])) {
+        isWin = false;
+        break; // no need to continue if one position not found
+      }
+    }
+    if (isWin) {
+      pattern = i;
+      if (user === 1) {
+        gameDetail.user1.winCount += 1;
+        winCount = gameDetail.user1.winCount;
+      } else {
+        gameDetail.user2.winCount += 1;
+        winCount = gameDetail.user2.winCount; // fixed bug here
+      }
+      break;
+    }
+  }
 
-	return {
-		isWin,
-		winCount,
-		pattern,
-	};
+  return {
+    isWin,
+    winCount,
+    pattern,
+  };
 }
 
 /**
@@ -157,10 +160,10 @@ export function CheckWin(room: any, userId: any) {
  * @returns
  */
 export function RemoveRoom(room: any) {
-	let index = gameDetails.findIndex((item) => item.room === room);
-	if (index !== -1) {
-		return gameDetails.splice(index, 1)[0];
-	}
+  let index = gameDetails.findIndex((item) => item.room === room);
+  if (index !== -1) {
+    return gameDetails.splice(index, 1)[0];
+  }
 }
 
 /**
@@ -168,14 +171,14 @@ export function RemoveRoom(room: any) {
  * @param socketId
  */
 export function UserLeft(socketId: any) {
-	if (!users.find((user) => user.socketId === socketId)) {
-		return;
-	}
-	let roomId = users.find((user) => user.socketId === socketId)?.roomId;
-	let index = users.findIndex((user) => user.socketId === socketId);
-	if (index !== 1) {
-		users.splice(index, 1)[0];
-	}
-	RemoveRoom(roomId);
-	return roomId;
+  if (!users.find((user) => user.socketId === socketId)) {
+    return;
+  }
+  let roomId = users.find((user) => user.socketId === socketId)?.roomId;
+  let index = users.findIndex((user) => user.socketId === socketId);
+  if (index !== -1) {
+    users.splice(index, 1)[0];
+  }
+  RemoveRoom(roomId);
+  return roomId;
 }
