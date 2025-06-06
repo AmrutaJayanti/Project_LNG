@@ -62,32 +62,35 @@ const TicTacToePage: React.FC<TicTacToePageProps> = ({ socket }) => {
       userId: user.userId,
     });
 
-   moves[m].move = 1;
-	 moves[m].myMove = true;
-
-
-    setUserTurn(true);
+    const updatedMoves = [...movesState];
+    updatedMoves[m] = {
+      ...updatedMoves[m],
+      move: 1,
+      myMove: true,
+    };
+    setMovesState(updatedMoves);
+    setUserTurn(false); // After your move, wait for opponent
   }
 
   function handlePlayAgain() {
     socket.emit<TicTacSockets>('reMatch', { roomId });
   }
 
-useEffect(() => {
-		window.onbeforeunload = function () {
-			window.setTimeout(function () {
-				navigate('/games');
-				socket.emit<TicTacSockets>('removeRoom', { roomId });
-			}, 0);
-			window.onbeforeunload = null;
-		};
+  useEffect(() => {
+    window.onbeforeunload = function () {
+      window.setTimeout(function () {
+        navigate('/games');
+        socket.emit<TicTacSockets>('removeRoom', { roomId });
+      }, 0);
+      window.onbeforeunload = null;
+    };
 
-		window.history.pushState(null, document.title, window.location.href);
-		window.addEventListener('popstate', function () {
-			window.history.pushState(null, document.title, this.window.location.href);
-		});
-	});
-  
+    window.history.pushState(null, document.title, window.location.href);
+    window.addEventListener('popstate', function () {
+      window.history.pushState(null, document.title, this.window.location.href);
+    });
+  }, []);
+
   useEffect(() => {
     if (!user) {
       navigate('/games');
@@ -101,97 +104,91 @@ useEffect(() => {
 
     socket.on<TicTacSockets>('usersEntered', (data: TicGameDetails) => {
       setLoadingValue('');
-if (data.user1.userId !== user.userId) {
-				setOponentName(data.user1.username);
-			} else {
-				setOponentName(data.user2.username);
-			}      setLoading(false);
+      if (data.user1.userId !== user.userId) {
+        setOponentName(data.user1.username);
+      } else {
+        setOponentName(data.user2.username);
+      }
+      setLoading(false);
     });
   }, [socket, user, params.roomId]);
 
   useEffect(() => {
-		setRoomId(params.roomId!);
-	}, [params.roomId]);
+    setRoomId(params.roomId!);
+  }, [params.roomId]);
 
+  useEffect(() => {
+    socket.on<TicTacSockets>('move', (payload: MoveProps) => {
+      console.log('move payload =>', payload);
 
-useEffect(() => {
-		socket.on<TicTacSockets>('move', (payload: MoveProps) => {
-			console.log('move payload =>', payload);
-			setMove({
-				move: payload.move,
-				myMove: payload.userId === user.userId,
-			});
-			setAllMoves([...allMoves, move]);
+      const updatedMoves = [...movesState];
+      updatedMoves[payload.move] = {
+        ...updatedMoves[payload.move],
+        move: 1,
+        myMove: payload.userId === user.userId,
+      };
+      setMovesState(updatedMoves);
+      setAllMoves([...allMoves, payload]);
 
-			moves[payload.move].move = 1;
-			moves[payload.move].myMove = payload.userId === user.userId;
+      setUserTurn(payload.userId !== user.userId);
+    });
 
-			if (payload.userId !== user.userId) {
-				setUserTurn(false);
-			}
-		});
+    socket.on<TicTacSockets>('win', (payload: WinPayloadProps) => {
+      console.log('win payload =>', payload);
+      setWinPattern(payload.pattern);
+      setGameEnd(true);
+      if (payload.userId === user.userId) {
+        setWinner('You Won!');
+        setMyScroe(myScore + 1);
+      } else {
+        setWinner(`You lost!, ${payload.username} won!`);
+        setOponentScore(oponentScore + 1);
+      }
+      setWinnerId(payload.userId);
+      setUserTurn(false);
+    });
 
-		socket.on<TicTacSockets>('win', (payload: WinPayloadProps) => {
-			console.log('win payload =>', payload);
-			setWinPattern(payload.pattern);
-			setGameEnd(true);
-			if (payload.userId === user.userId) {
-				setWinner('You Won!');
-				setMyScroe(myScore + 1);
-			} else {
-				setWinner(`You lost!, ${payload.username} won!`);
-				setOponentScore(oponentScore + 1);
-			}
-			setWinnerId(payload.userId);
-			setUserTurn(false);
-		});
+    socket.on<TicTacSockets>('draw', () => {
+      setWinner('Draw!');
+      setGameEnd(true);
+      setUserTurn(false);
+      setLoadingValue('');
+    });
+  }, [socket, user, myScore, oponentScore, movesState]);
 
-		socket.on<TicTacSockets>('draw', () => {
-			setWinner('Draw!');
-			setGameEnd(true);
-			setUserTurn(false);
-			setLoadingValue('');
-		});
-	}, []);
+  useEffect(() => {
+    socket.on<TicTacSockets>('reMatch', () => {
+      const resetMoves = movesState.map((m) => ({ ...m, move: -1, myMove: false }));
+      setMovesState(resetMoves);
+      setWinner('');
+      setUserTurn(user.userId !== winnerId);
+      setGameEnd(false);
+    });
 
+    socket.on<TicTacSockets>('removeRoom', (payload) => {
+      console.log('removeRoom =>', payload);
+      setUserJoined(false);
+      setLeaveRoom(true);
+    });
+  }, [socket, movesState, user.userId, winnerId]);
 
-useEffect(() => {
-		socket.on<TicTacSockets>('reMatch', () => {
-			moves.forEach((m) => {
-				m.move = -1;
-				m.myMove = false;
-			});
-			setWinner('');
-
-			setUserTurn(user.userId !== winnerId);
-			setGameEnd(false);
-		});
-
-		socket.on<TicTacSockets>('removeRoom', (payload) => {
-			console.log('removeRoom =>', payload);
-			setUserJoined(false);
-			setLeaveRoom(true);
-		});
-	});
-
-useEffect(() => {
-		socket.on<TicTacSockets>('userLeave', (payload: any) => {
-			console.log('userLeave =>', payload);
-			if (Object.keys(payload).length) {
-				setLoadingValue('');
-				toast({
-					title: `${oponentName || 'Oponent'} left the game`,
-					status: 'warning',
-					duration: 5000,
-					isClosable: true,
-					position: 'bottom',
-				});
-				setLoading(true);
-				setUserJoined(false);
-			}
-		});
-	}, []);
-
+  useEffect(() => {
+    socket.on<TicTacSockets>('userLeave', (payload: any) => {
+      console.log('userLeave =>', payload);
+      if (Object.keys(payload).length) {
+        setLoadingValue('');
+        toast({
+          title: `${oponentName || 'Oponent'} left the game`,
+          status: 'warning',
+          duration: 5000,
+          isClosable: true,
+          position: 'bottom',
+        });
+        setLoading(true);
+        setUserJoined(false);
+      }
+    });
+  }, [socket, oponentName, toast]);
 
   return (
     <div>
@@ -207,10 +204,10 @@ useEffect(() => {
           </Alert>
         )}
 
-        {userTurn && (
+        {userTurn && !gameEnd && (
           <Alert status="info" width={460} mt={7} rounded="md">
             <AlertIcon />
-            <AlertTitle className="animate-pulse">Waiting for opponent response!</AlertTitle>
+            <AlertTitle className="animate-pulse">Your Turn</AlertTitle>
           </Alert>
         )}
 
@@ -227,14 +224,14 @@ useEffect(() => {
           {movesState.slice(1).map((m, idx) => (
             <div
               key={idx + 1}
-              onClick={m.move === -1 && !winner ? () => handleMoveClick(idx + 1) : undefined}
+              onClick={m.move === -1 && !gameEnd && userTurn ? () => handleMoveClick(idx + 1) : undefined}
               className={
                 m.move === -1
                   ? `grid-item-hover grid-item${(idx + 1) % 3 !== 0 ? ' right' : ''}${idx < 6 ? ' bottom' : ''}`
                   : `grid-item${(idx + 1) % 3 !== 0 ? ' right' : ''}${idx < 6 ? ' bottom' : ''}`
               }
             >
-              {m.move !== -1 ? (m.myMove ? '0' : 'X') : null}
+              {m.move !== -1 ? (m.myMove ? 'O' : 'X') : null}
             </div>
           ))}
         </div>
