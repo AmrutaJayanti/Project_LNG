@@ -37,6 +37,7 @@ const ProfileModal: FC<Props> = ({ user, children }) => {
           icon={<ViewIcon />}
           onClick={onOpen}
           aria-label="Open profile modal"
+          width:"25%"
         />
       )}
       <Modal size="lg" isOpen={isOpen} onClose={onClose} isCentered>
