@@ -86,7 +86,7 @@ const SignUp: React.FC = () => {
 
     try {
       const config: AxiosRequestConfig = {
-        baseURL: 'http://localhost:5000',
+        baseURL: 'https://project-lng-1.onrender.com',
         headers: { 'Content-type': 'application/json' },
       };
       const { data } = await axios.post(
