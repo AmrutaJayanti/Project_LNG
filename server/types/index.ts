@@ -86,6 +86,7 @@ export interface TicGameDetails {
 	room: any;
 	user1: TicGameUser;
 	user2: TicGameUser;
+	currentTurn: string | number; 
 }
 
 export interface JoinRoomPayload {
