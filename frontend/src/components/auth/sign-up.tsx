@@ -11,53 +11,8 @@ const SignUp: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [pic, setPic] = useState<any>();
-  const [show, setShow] = useState<boolean>(false);
-  const [confirmShow, setConfirmShow] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const postDetails = (pics: any) => {
-    setLoading(true);
-    if (!pics) {
-      toast({
-        title: 'Please select an Image!',
-        status: 'warning',
-        duration: 5000,
-        isClosable: true,
-        position: 'bottom',
-      });
-      setLoading(false);
-      return;
-    }
-    if (pics.type === 'image/jpeg' || pics.type === 'image/png') {
-      const data = new FormData();
-      data.append('file', pics);
-      data.append('upload_preset', 'chat-app');
-      data.append('cloud_name', 'ttscloud');
-      fetch('https://api.cloudinary.com/v1_1/ttscloud/image/upload', {
-        method: 'POST',
-        body: data,
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setPic(data.url.toString());
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setLoading(false);
-        });
-    } else {
-      toast({
-        title: 'Please select a JPEG or PNG image!',
-        status: 'warning',
-        duration: 5000,
-        isClosable: true,
-        position: 'bottom',
-      });
-      setLoading(false);
-    }
-  };
 
   const submitHandler = async () => {
     setLoading(true);
@@ -91,7 +46,7 @@ const SignUp: React.FC = () => {
       };
       const { data } = await axios.post(
         '/api/user',
-        { name, email, password, pic },
+        { name, email, password },
         config,
       );
       toast({
@@ -142,7 +97,7 @@ const SignUp: React.FC = () => {
         <InputGroup>
           <Input
             value={password}
-            type={show ? 'text' : 'password'}
+            type= 'password'
             placeholder="Enter Password"
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -153,7 +108,7 @@ const SignUp: React.FC = () => {
         <InputGroup>
           <Input
             value={confirmPassword}
-            type={confirmShow ? 'text' : 'password'}
+            type= 'password'
             placeholder="Confirm Password"
             onChange={(e) => setConfirmPassword(e.target.value)}
           />

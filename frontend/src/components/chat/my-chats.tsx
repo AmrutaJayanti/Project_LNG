@@ -1,14 +1,12 @@
-import { Box, Stack, Text, useToast, Button } from '@chakra-ui/react';
+import { Box, Stack, Text, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import type { AxiosRequestConfig } from 'axios';
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 import { ChatState } from '../../context/chat-provider';
 import type { UserProps } from '../../types';
-import { AddIcon } from '@chakra-ui/icons';
 import ChatLoading from './chat-loading';
 import { getSender } from '../../config/chat-logic';
-import GroupChatModal from '../../miscellaneous/group-chat-modal';
 
 interface MyChatsProps {
   fetchAgain: boolean;
