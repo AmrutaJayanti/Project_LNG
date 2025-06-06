@@ -82,7 +82,7 @@ const SingleChat: React.FC<ChatBoxProps> = ({ fetchAgain, setFetchAgain }) => {
     if (!selectedChat) return;
     try {
       const config: AxiosRequestConfig = {
-        baseURL: 'https://project-lng-1.onrender.com',
+        baseURL: 'https://project-lng-2.onrender.com',
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
@@ -113,7 +113,7 @@ const SingleChat: React.FC<ChatBoxProps> = ({ fetchAgain, setFetchAgain }) => {
       socket.emit<SocketNames>('stopTyping', selectedChat._id);
       try {
         const config: AxiosRequestConfig = {
-          baseURL: 'https://project-lng-1.onrender.com',
+          baseURL: 'https://project-lng-2.onrender.com',
           headers: {
             Authorization: `Bearer ${user.token}`,
             'Content-Type': 'application/json',
