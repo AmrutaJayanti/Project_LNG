@@ -41,7 +41,7 @@ const SignUp: React.FC = () => {
 
     try {
       const config: AxiosRequestConfig = {
-        baseURL: 'https://project-lng-2.onrender.com',
+        baseURL: 'https://mern-chat-utlm.onrender.com',
         headers: { 'Content-type': 'application/json' },
       };
       const { data } = await axios.post(
