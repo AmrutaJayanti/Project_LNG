@@ -35,7 +35,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: ['https://livenetworkgames.netlify.app/'],
+    origin: ['https://livenetworkgames.netlify.app'],
   }),
 );
 
@@ -56,7 +56,7 @@ const server = app.listen(PORT, () => {
 const io: Server = new Server(server, {
   pingTimeout: 60000,
   cors: {
-    origin: ['https://livenetworkgames.netlify.app/'],
+    origin: ['https://livenetworkgames.netlify.app'],
   },
 });
 
