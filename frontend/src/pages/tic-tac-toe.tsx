@@ -62,11 +62,9 @@ const TicTacToePage: React.FC<TicTacToePageProps> = ({ socket }) => {
       userId: user.userId,
     });
 
-    setMovesState((prev) => {
-      const updated = [...prev];
-      updated[m] = { move: 1, myMove: true };
-      return updated;
-    });
+   moves[m].move = 1;
+	 moves[m].myMove = true;
+
 
     setUserTurn(true);
   }
@@ -75,14 +73,21 @@ const TicTacToePage: React.FC<TicTacToePageProps> = ({ socket }) => {
     socket.emit<TicTacSockets>('reMatch', { roomId });
   }
 
-  useEffect(() => {
-    if (!params.roomId) {
-      navigate('/games');
-      return;
-    }
-    setRoomId(params.roomId);
-  }, [params.roomId]);
+useEffect(() => {
+		window.onbeforeunload = function () {
+			window.setTimeout(function () {
+				navigate('/games');
+				socket.emit<TicTacSockets>('removeRoom', { roomId });
+			}, 0);
+			window.onbeforeunload = null;
+		};
 
+		window.history.pushState(null, document.title, window.location.href);
+		window.addEventListener('popstate', function () {
+			window.history.pushState(null, document.title, this.window.location.href);
+		});
+	});
+  
   useEffect(() => {
     if (!user) {
       navigate('/games');
@@ -96,77 +101,97 @@ const TicTacToePage: React.FC<TicTacToePageProps> = ({ socket }) => {
 
     socket.on<TicTacSockets>('usersEntered', (data: TicGameDetails) => {
       setLoadingValue('');
-      setOponentName(data.user1.userId !== user.userId ? data.user1.username : data.user2.username);
-      setLoading(false);
+if (data.user1.userId !== user.userId) {
+				setOponentName(data.user1.username);
+			} else {
+				setOponentName(data.user2.username);
+			}      setLoading(false);
     });
   }, [socket, user, params.roomId]);
 
   useEffect(() => {
-    socket.on<TicTacSockets>('move', (payload: MoveProps) => {
-      const isMyMove = payload.userId === user.userId;
+		setRoomId(params.roomId!);
+	}, [params.roomId]);
 
-      setAllMoves((prev) => [...prev, { move: payload.move, myMove: isMyMove }]);
-      setMovesState((prev) => {
-        const updated = [...prev];
-        updated[payload.move] = { move: 1, myMove: isMyMove };
-        return updated;
-      });
 
-      if (!isMyMove) {
-        setUserTurn(false);
-      }
-    });
+useEffect(() => {
+		socket.on<TicTacSockets>('move', (payload: MoveProps) => {
+			console.log('move payload =>', payload);
+			setMove({
+				move: payload.move,
+				myMove: payload.userId === user.userId,
+			});
+			setAllMoves([...allMoves, move]);
 
-    socket.on<TicTacSockets>('win', (payload: WinPayloadProps) => {
-      setWinPattern(payload.pattern);
-      setGameEnd(true);
-      if (payload.userId === user.userId) {
-        setWinner('You Won!');
-        setMyScroe((prev) => prev + 1);
-      } else {
-        setWinner(`You lost!, ${payload.username} won!`);
-        setOponentScore((prev) => prev + 1);
-      }
-      setWinnerId(payload.userId);
-      setUserTurn(false);
-    });
+			moves[payload.move].move = 1;
+			moves[payload.move].myMove = payload.userId === user.userId;
 
-    socket.on<TicTacSockets>('draw', () => {
-      setWinner('Draw!');
-      setGameEnd(true);
-      setUserTurn(false);
-      setLoadingValue('');
-    });
-  }, [socket, user.userId]);
+			if (payload.userId !== user.userId) {
+				setUserTurn(false);
+			}
+		});
 
-  useEffect(() => {
-    socket.on<TicTacSockets>('reMatch', () => {
-      setMovesState(structuredClone(defaultMoves));
-      setWinner('');
-      setUserTurn(user.userId !== winnerId);
-      setGameEnd(false);
-    });
+		socket.on<TicTacSockets>('win', (payload: WinPayloadProps) => {
+			console.log('win payload =>', payload);
+			setWinPattern(payload.pattern);
+			setGameEnd(true);
+			if (payload.userId === user.userId) {
+				setWinner('You Won!');
+				setMyScroe(myScore + 1);
+			} else {
+				setWinner(`You lost!, ${payload.username} won!`);
+				setOponentScore(oponentScore + 1);
+			}
+			setWinnerId(payload.userId);
+			setUserTurn(false);
+		});
 
-    socket.on<TicTacSockets>('removeRoom', () => {
-      setUserJoined(false);
-      setLeaveRoom(true);
-    });
-  }, [socket, user.userId, winnerId]);
+		socket.on<TicTacSockets>('draw', () => {
+			setWinner('Draw!');
+			setGameEnd(true);
+			setUserTurn(false);
+			setLoadingValue('');
+		});
+	}, []);
 
-  useEffect(() => {
-    socket.on<TicTacSockets>('userLeave', () => {
-      setLoadingValue('');
-      toast({
-        title: `${oponentName || 'Oponent'} left the game`,
-        status: 'warning',
-        duration: 5000,
-        isClosable: true,
-        position: 'bottom',
-      });
-      setLoading(true);
-      setUserJoined(false);
-    });
-  }, [socket, oponentName]);
+
+useEffect(() => {
+		socket.on<TicTacSockets>('reMatch', () => {
+			moves.forEach((m) => {
+				m.move = -1;
+				m.myMove = false;
+			});
+			setWinner('');
+
+			setUserTurn(user.userId !== winnerId);
+			setGameEnd(false);
+		});
+
+		socket.on<TicTacSockets>('removeRoom', (payload) => {
+			console.log('removeRoom =>', payload);
+			setUserJoined(false);
+			setLeaveRoom(true);
+		});
+	});
+
+useEffect(() => {
+		socket.on<TicTacSockets>('userLeave', (payload: any) => {
+			console.log('userLeave =>', payload);
+			if (Object.keys(payload).length) {
+				setLoadingValue('');
+				toast({
+					title: `${oponentName || 'Oponent'} left the game`,
+					status: 'warning',
+					duration: 5000,
+					isClosable: true,
+					position: 'bottom',
+				});
+				setLoading(true);
+				setUserJoined(false);
+			}
+		});
+	}, []);
+
 
   return (
     <div>
