@@ -23,7 +23,7 @@ const MyChats: FC<MyChatsProps> = ({ fetchAgain }) => {
   const fetchChats = async () => {
     try {
       const config: AxiosRequestConfig = {
-        baseURL: 'http://localhost:5000',
+        baseURL: 'https://project-lng-1.onrender.com',
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
