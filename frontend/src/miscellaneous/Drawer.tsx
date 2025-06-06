@@ -61,7 +61,7 @@ const SlideDrawer: React.FC = () => {
     try {
       setLoading(true);
       const config: AxiosRequestConfig = {
-        baseURL: 'https://project-lng-2.onrender.com',
+        baseURL: 'https://mern-chat-utlm.onrender.com',
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
@@ -86,7 +86,7 @@ const SlideDrawer: React.FC = () => {
     try {
       setLoadingchat(true);
       const config: AxiosRequestConfig = {
-        baseURL: 'https://project-lng-2.onrender.com',
+        baseURL: 'https://mern-chat-utlm.onrender.com',
         headers: {
           'Content-type': 'application/json',
           Authorization: `Bearer ${user.token}`,
