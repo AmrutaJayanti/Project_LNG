@@ -50,7 +50,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
 		try {
 			setLoading(true);
 			const config: AxiosRequestConfig = {
-				baseURL: 'http://localhost:5000',
+				baseURL: 'https://project-lng-1.onrender.com',
 				headers: {
 					Authorization: `Bearer ${user.token}`,
 				},
@@ -108,7 +108,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({ children }) => {
 
 		try {
 			const config: AxiosRequestConfig = {
-				baseURL: 'http://localhost:5000',
+				baseURL: 'https://project-lng-1.onrender.com',
 				headers: {
 					Authorization: `Bearer ${user.token}`,
 				},
