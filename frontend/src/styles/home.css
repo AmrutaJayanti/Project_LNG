@@ -1,0 +1,178 @@
+/* === BACKGROUND LAYOUT === */
+.homepage-bg {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('../assets/images/background-img.png') center/cover no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Inter', sans-serif;
+  color: #120f0f;
+  padding: 1rem;
+}
+
+/* === GLASS CONTAINER === */
+.glass-container {
+  background: rgba(255, 255, 255, 0.523);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 18px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+  padding: 2rem 1.5rem;
+  width: 100%;
+  max-width: 400px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* === LOGO === */
+.logo-image {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 0.75rem;
+  border-radius: 14px;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.logo-image:hover {
+  transform: scale(1.06);
+}
+
+/* === MAIN HEADING === */
+.heading-text {
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  color: #f2f2f2;
+}
+
+/* === TABS CONTAINER === */
+.tabs-container {
+  margin-top: 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+}
+
+/* === FORM === */
+.auth-form,
+.login-form {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* === FORM CONTROL === */
+.chakra-form-control {
+  width: 100%;
+}
+
+.chakra-form-control label {
+  font-weight: 600;
+  color: #060000;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+/* === INPUTS === */
+.chakra-input {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #080202 !important;
+  border: 1px solid rgba(16, 8, 8, 0.968) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin:5px;
+}
+
+.chakra-input:focus {
+  border-color: #4fd1c5 !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 0 10px rgba(79, 209, 197, 0.6);
+}
+
+/* === PASSWORD TOGGLE === */
+.chakra-input__right-element button {
+  color: #4fd1c5 !important;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: color 0.3s ease;
+}
+
+/* === SUBMIT BUTTON === */
+.chakra-button {
+  background: linear-gradient(90deg, #4fd1c5, #4299e1);
+  color: #fff !important;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  padding: 10px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.chakra-button:hover {
+  background: linear-gradient(90deg, #4299e1, #4fd1c5);
+  box-shadow: 0 8px 20px rgba(74, 144, 226, 0.6);
+  transform: translateY(-2px);
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+  .glass-container {
+    max-width: 90vw;
+  }
+
+  .heading-text {
+    font-size: 1.75rem;
+  }
+
+  .logo-image {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .glass-container {
+    padding: 1.25rem 1rem;
+  }
+
+  .heading-text {
+    font-size: 1.5rem;
+  }
+
+  .logo-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .chakra-button {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+
+  .chakra-input {
+    padding: 8px 10px !important;
+    font-size: 0.85rem;
+  }
+
+  .chakra-form-control label {
+    font-size: 0.85rem;
+  }
+
+  .chakra-input__right-element button {
+    font-size: 0.8rem;
+  }
+}
