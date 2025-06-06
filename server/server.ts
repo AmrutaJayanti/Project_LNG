@@ -104,165 +104,148 @@ io.on('connection', (socket) => {
     socket.leave(userData._id);
   });
 
-  // Join Room (TicTacToe)
-  socket.on<TicTacSockets>('joinRoom', (payload: JoinRoomPayload) => {
-    AddUser(socket.id, payload.roomId);
+ socket.on<TicTacSockets>('joinRoom', (payload: JoinRoomPayload) => {
+		AddUser(socket.id, payload.roomId);
 
-    const user: RoomUser = {
-      socketId: socket.id,
-      username: payload.username,
-      roomId: payload.roomId,
-    };
+		const user: RoomUser = {
+			socketId: socket.id,
+			username: payload.username,
+			roomId: payload.roomId,
+		};
 
-    NewGame(payload.roomId, payload.userId, payload.username);
+		NewGame(payload.roomId, payload.userId, payload.username);
 
-    socket.join(user.roomId);
+		socket.join(user.roomId);
 
-    socket.emit<TicTacSockets>('message', 'Welcome to MERN-Tic');
-  });
+		socket.emit<TicTacSockets>('message', 'Welcome to MERN-Tic');
+	});
 
-  // Join Existing Room (TicTacToe)
-  socket.on<TicTacSockets>('joinExistingRoom', (payload: JoinRoomPayload) => {
-    AddUser(socket.id, payload.roomId);
+	// Join Existing Room (TicTacToe)
+	socket.on<TicTacSockets>('joinExistingRoom', (payload: JoinRoomPayload) => {
+		AddUser(socket.id, payload.roomId);
 
-    const user: RoomUser = {
-      socketId: socket.id,
-      username: payload.username,
-      roomId: payload.roomId,
-    };
+		const user: RoomUser = {
+			socketId: socket.id,
+			username: payload.username,
+			roomId: payload.roomId,
+		};
 
-    const roomExists = GetGameDetail(payload.roomId);
+		const roomExists = GetGameDetail(payload.roomId);
 
-    if (!roomExists) {
-      socket.emit<TicTacSockets>('message', {
-        error: 'Room does not exist',
-      });
-      return;
-    }
+		if (!roomExists) {
+			socket.emit<TicTacSockets>('message', {
+				error: 'Room does not exist',
+			});
+			return;
+		}
 
-    if (!NewGame(payload.roomId, payload.userId, payload.username)) {
-      socket.emit<TicTacSockets>('message', {
-        error: 'Room is Full',
-      });
-      return;
-    }
+		if (!NewGame(payload.roomId, payload.userId, payload.username)) {
+			socket.emit<TicTacSockets>('message', {
+				error: 'Room is Full',
+			});
+			return;
+		}
 
-    socket.join(user.roomId);
+		socket.join(user.roomId);
 
-    socket.emit<TicTacSockets>('message', 'Welcome to Mern TIC');
+		socket.emit<TicTacSockets>('message', 'Welcome to Mern TIC');
 
-    socket
-      .to(payload.roomId)
-      .emit<TicTacSockets>('userJoined', `${payload.username} joined the game`);
+		socket
+			.to(payload.roomId)
+			.emit<TicTacSockets>('userJoined', `${payload.username} joined the game`);
 
-    return;
-  });
+		return;
+	});
 
-  // Users Entered (TicTacToe)
-  socket.on<TicTacSockets>('usersEntered', (payload: JoinRoomPayload) => {
-    console.log('Users Entered');
-    const current_game = GetGameDetail(payload.roomId);
+	// Users Entered (TicTacToe)
+	socket.on<TicTacSockets>('usersEntered', (payload: JoinRoomPayload) => {
+		console.log('Users Entered');
+		const current_game = GetGameDetail(payload.roomId);
 
-    if (!current_game) return;
+		if (!current_game) {
+			return;
+		}
 
-    if (current_game.user1.userId === payload.userId) {
-      current_game.user1.inGame = true;
-    } else if (current_game.user2.userId === payload.userId) {
-      current_game.user2.inGame = true;
-    }
+		if (current_game.user1.userId === payload.userId) {
+			current_game.user1.inGame = true;
+		} else if (current_game.user2.userId === payload.userId) {
+			current_game.user2.inGame = true;
+		}
 
-    if (current_game.user1.inGame && current_game.user2.inGame) {
-      io.in(payload.roomId).emit<TicTacSockets>('usersEntered', {
-        user1: current_game.user1,
-        user2: current_game.user2,
-      });
-    }
-  });
+		if (current_game.user1.inGame && current_game.user2.inGame) {
+			io.in(payload.roomId).emit<TicTacSockets>('usersEntered', {
+				user1: current_game.user1,
+				user2: current_game.user2,
+			});
+		}
+	});
 
-  // Move (TicTacToe)
- socket.on<TicTacSockets>('move', async (payload: JoinRoomPayload) => {
-  const current_room = GetGameDetail(payload.roomId)!;
-  
-  // Enforce turn order: reject if it's not the player's turn
-  if (current_room.currentTurn !== payload.userId) {
-    socket.emit<TicTacSockets>('message', { error: "It's not your turn" });
-    return;
-  }
+	// Move (TicTacToe)
+	socket.on<TicTacSockets>('move', async (payload: JoinRoomPayload) => {
+		const current_room = GetGameDetail(payload.roomId)!;
+		let current_username;
+		let moveCount;
 
-  if (!current_room.user1.userId || !current_room.user2.userId) {
-    io.in(payload.roomId).emit<TicTacSockets>('userLeave', {});
-    return;
-  }
+		if (!current_room.user1.userId || !current_room.user2.userId) {
+			io.in(payload.roomId).emit<TicTacSockets>('userLeave', {});
+		}
 
-  let current_username;
-  let moveCount;
+		if (current_room?.user1.userId === payload.userId) {
+			current_room.user1.moves.push(payload.move);
+			moveCount = current_room.user1.moves.length;
+			current_username = current_room.user1.username;
+		} else {
+			current_room?.user2.moves.push(payload.move);
+			moveCount = current_room?.user2.moves.length;
+			current_username = current_room?.user2.username;
+		}
 
-  if (current_room.user1.userId === payload.userId) {
-    current_room.user1.moves.push(payload.move);
-    moveCount = current_room.user1.moves.length;
-    current_username = current_room.user1.username;
-  } else {
-    current_room.user2.moves.push(payload.move);
-    moveCount = current_room.user2.moves.length;
-    current_username = current_room.user2.username;
-  }
+		io.in(payload.roomId).emit<TicTacSockets>('move', {
+			move: payload.move,
+			userId: payload.userId,
+		});
 
-  // Switch turn to other player
-  current_room.currentTurn =
-    current_room.currentTurn === current_room.user1.userId
-      ? current_room.user2.userId
-      : current_room.user1.userId;
+		if (moveCount >= 3) {
+			const { isWin, winCount, pattern } = CheckWin(
+				payload.roomId,
+				payload.userId,
+			);
 
-  io.in(payload.roomId).emit<TicTacSockets>('move', {
-    move: payload.move,
-    userId: payload.userId,
-  });
+			if (isWin) {
+				io.in(payload.roomId).emit<TicTacSockets>('win', {
+					userId: payload.userId,
+					username: current_username,
+					pattern,
+				});
+				return;
+			}
 
-  if (moveCount >= 3) {
-    const { isWin, winCount, pattern } = CheckWin(
-      payload.roomId,
-      payload.userId,
-    );
+			if (
+				current_room?.user1.moves.length + current_room.user2.moves.length >=
+				9
+			) {
+				io.in(payload.roomId).emit<TicTacSockets>('draw', {
+					roomId: payload.roomId,
+				});
+				return;
+			}
+		}
+	});
 
-    if (isWin) {
-      io.in(payload.roomId).emit<TicTacSockets>('win', {
-        userId: payload.userId,
-        username: current_username,
-        pattern,
-      });
-      return;
-    }
+	// Rematch (TicTacToe)
+	socket.on<TicTacSockets>('reMatch', (payload: JoinRoomPayload) => {
+		let currGameDetail = GetGameDetail(payload.roomId)!;
+		currGameDetail.user1.moves = [];
+		currGameDetail.user2.moves = [];
 
-    if (
-      current_room.user1.moves.length + current_room.user2.moves.length >= 9
-    ) {
-      io.in(payload.roomId).emit<TicTacSockets>('draw', {
-        roomId: payload.roomId,
-      });
-      return;
-    }
-  }
-});
+		io.in(payload.roomId).emit<TicTacSockets>('reMatch', {
+			currGameDetail,
+		});
+	});
 
-
-  // Rematch (TicTacToe)
-  socket.on<TicTacSockets>('reMatch', (payload: JoinRoomPayload) => {
-    let currGameDetail = GetGameDetail(payload.roomId)!;
-    currGameDetail.user1.moves = [];
-    currGameDetail.user2.moves = [];
-
-    io.in(payload.roomId).emit<TicTacSockets>('reMatch', {
-      currGameDetail,
-    });
-  });
-
-  // Remove Room (TicTacToe)
-  socket.on<TicTacSockets>('removeRoom', (payload: JoinRoomPayload) => {
-    try {
-      io.in(payload.roomId).emit('removeRoom', 'remove');
-      RemoveRoom(payload.roomId);
-    } catch (error) {
-      console.log('Create Game Error => ', error);
-    }
-  });
+	// Remove Room (TicTacToe)
+	socket.on<TicTacSockets>('removeRoom', (payload: JoinRoomPayload) => {
+		io.in(payload.roomId).emit('removeRoom', 'remove');
+		RemoveRoom(payload.roomId);
+	});
 });
